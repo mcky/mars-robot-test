@@ -43,10 +43,12 @@ const debug = console.log.bind(console);
  */
 type Coordinate = [number, number];
 
-// To keep things simple / aid debugging instead of parsing the orientations
-// into degrees they're kept as strings. In future we could parse them to 90deg
-// increments, but that would require also re-serializing them for the end result
-type Orientation = "N" | "S" | "E" | "W";
+export enum Orientation {
+  North = 0,
+  East = 90,
+  South = 180,
+  West = 270,
+}
 
 export enum Instruction {
   Left = "L",
@@ -150,13 +152,13 @@ export function applyInstruction(
 
 function moveForward([[x, y], orientation]: Position): Position {
   switch (orientation) {
-    case "N":
+    case Orientation.North:
       return [[x, y + 1], orientation];
-    case "S":
+    case Orientation.South:
       return [[x, y - 1], orientation];
-    case "E":
+    case Orientation.East:
       return [[x + 1, y], orientation];
-    case "W":
+    case Orientation.West:
       return [[x - 1, y], orientation];
     default:
       // @ts-expect-error
@@ -166,28 +168,23 @@ function moveForward([[x, y], orientation]: Position): Position {
 
 type Direction = Extract<Instruction, Instruction.Left | Instruction.Right>;
 
+/**
+ * Rotate the orientation by 90 degree increments depending
+ * on the provided direction
+ *
+ * orientation is always clamped from 0-359, with north at 0
+ */
 function rotate(
   [coords, orientation]: Position,
   direction: Direction
 ): Position {
-  const directions: Orientation[] = ["N", "E", "S", "W"];
-  const currentIdx = directions.indexOf(orientation);
+  const offset = direction === Instruction.Left ? -90 : 90;
 
-  // @NOTE: This could be using modulo to wrap the index in the array etc, but since we
-  // only have 4 cardinal directions and there can only be one rotation per instruction
-  // this seems sufficient
-  let nextIdx =
-    direction === Instruction.Left ? currentIdx - 1 : currentIdx + 1;
-
-  if (nextIdx >= directions.length) {
-    // W->N
-    nextIdx = 0;
-  } else if (nextIdx === -1) {
-    // N->W
-    nextIdx = directions.length - 1;
+  let nextOrientation = (orientation + offset) % 360;
+  if (nextOrientation < 0) {
+    nextOrientation += 360;
   }
 
-  const nextOrientation = directions[nextIdx];
   return [coords, nextOrientation];
 }
 
@@ -200,7 +197,7 @@ function isOutOfBounds(
 
 function formatRobotOutput(position: Position, wasLost: boolean): string {
   const [[x, y], orientation] = position;
-  let formattedOutput = `${x} ${y} ${orientation}`;
+  let formattedOutput = `${x} ${y} ${serializeOrientation(orientation)}`;
 
   if (wasLost) {
     formattedOutput += ` LOST`;
@@ -248,7 +245,7 @@ export function parseInputs(input: string): Inputs {
       const startCoords: Coordinate = [parseInt(xStr, 10), parseInt(yStr, 10)];
 
       return {
-        startPosition: [startCoords, orientationStr as Orientation],
+        startPosition: [startCoords, parseOrientation(orientationStr)],
         instructions: instructions.split("").map(parseInstruction),
       };
     });
@@ -260,6 +257,43 @@ export function parseInputs(input: string): Inputs {
     ],
     robots,
   };
+}
+
+function parseOrientation(char: string): Orientation {
+  // @NOTE: We could do some fancy reversed-enum lookup here, but KISS
+  switch (char) {
+    case "N":
+      return Orientation.North;
+    case "E":
+      return Orientation.East;
+    case "S":
+      return Orientation.South;
+    case "W":
+      return Orientation.West;
+    default:
+      // @ts-expect-error
+      assertUnreachable();
+  }
+}
+
+/**
+ * Convert an Orientation enum to it's cardinal direction as a
+ * string e.g. N/E/S/W.
+ */
+function serializeOrientation(orientation: Orientation): string {
+  switch (orientation) {
+    case Orientation.North:
+      return "N";
+    case Orientation.East:
+      return "E";
+    case Orientation.South:
+      return "S";
+    case Orientation.West:
+      return "W";
+    default:
+      // @ts-expect-error
+      assertUnreachable();
+  }
 }
 
 function parseInstruction(char: string): Instruction {

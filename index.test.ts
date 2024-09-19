@@ -1,4 +1,11 @@
-import { applyInstruction, Instruction, main, parseInputs, Position } from "./";
+import {
+  applyInstruction,
+  Instruction,
+  main,
+  Orientation,
+  parseInputs,
+  Position,
+} from "./";
 
 /**
  * @NOTE: Most of the first-pass was written REPL style (using quokka.js) instead of TDD.
@@ -30,8 +37,8 @@ describe("applyInstruction", () => {
   // @NOTE: Given more time I'd either dupe these for each case, or
   // use it.each to cover all cases
   it("moves forward when facing north", () => {
-    const startPosition: Position = [[0, 0], "N"];
-    const endPosition = [[0, 1], "N"];
+    const startPosition: Position = [[0, 0], Orientation.North];
+    const endPosition = [[0, 1], Orientation.North];
 
     expect(applyInstruction(startPosition, Instruction.Forward)).toEqual(
       endPosition
@@ -39,8 +46,8 @@ describe("applyInstruction", () => {
   });
 
   it("rotates to the right", () => {
-    const startPosition: Position = [[0, 0], "W"];
-    const endPosition = [[0, 0], "N"];
+    const startPosition: Position = [[0, 0], Orientation.West];
+    const endPosition = [[0, 0], Orientation.North];
 
     expect(applyInstruction(startPosition, Instruction.Right)).toEqual(
       endPosition
@@ -48,8 +55,8 @@ describe("applyInstruction", () => {
   });
 
   it("rotates to the left", () => {
-    const startPosition: Position = [[0, 0], "N"];
-    const endPosition = [[0, 0], "W"];
+    const startPosition: Position = [[0, 0], Orientation.North];
+    const endPosition = [[0, 0], Orientation.West];
 
     expect(applyInstruction(startPosition, Instruction.Left)).toEqual(
       endPosition
@@ -79,7 +86,7 @@ describe("parseInputs", () => {
     const input = `1 1\n2 2 E\nRFL`;
     const parsed = parseInputs(input);
 
-    expect(parsed.robots[0].startPosition).toEqual([[2, 2], "E"]);
+    expect(parsed.robots[0].startPosition).toEqual([[2, 2], Orientation.East]);
   });
 
   it("parses a robots instructions", () => {
