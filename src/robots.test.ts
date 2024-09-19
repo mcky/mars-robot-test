@@ -5,7 +5,7 @@ import {
   Orientation,
   parseInputs,
   Position,
-} from "./";
+} from "./robots";
 
 /**
  * @NOTE: Most of the first-pass was written REPL style (using quokka.js) instead of TDD.
