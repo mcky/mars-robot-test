@@ -41,7 +41,7 @@ const debug = console.log.bind(console);
 /**
  * A coordinate represented as [x, y]
  */
-type Coordinate = [number, number];
+export type Coordinate = [number, number];
 
 export enum Orientation {
   North = 0,
@@ -58,7 +58,7 @@ export enum Instruction {
 
 export type Position = [Coordinate, Orientation];
 
-type RobotInstructions = {
+export type RobotInstructions = {
   startPosition: Position;
   instructions: Instruction[];
 };
@@ -75,13 +75,14 @@ type RobotInstructions = {
  * Returns the robots final position and a flag
  * indicating if it fell off the map.
  */
-function processRobot(
+export function processRobot(
   robot: RobotInstructions,
   lostMarkerPositions: Coordinate[],
   grid: [Coordinate, Coordinate]
-): [Position, boolean] {
+): [Position, boolean, Position[]] {
   let currentPosition = robot.startPosition;
   let robotIsOutOfBounds = false;
+  let visitedPositions: Position[] = [];
 
   debug(`processing robot at ${robot.startPosition}`);
 
@@ -113,11 +114,12 @@ function processRobot(
     if (robotIsOutOfBounds) {
       break;
     } else {
+      visitedPositions.push(nextPosition);
       currentPosition = nextPosition;
     }
   }
 
-  return [currentPosition, robotIsOutOfBounds];
+  return [currentPosition, robotIsOutOfBounds, visitedPositions];
 }
 
 /**
