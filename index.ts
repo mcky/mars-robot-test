@@ -326,6 +326,6 @@ function parseInstruction(char: string): Instruction {
  *        assertUnreachable();
  *    }
  */
-function assertUnreachable(x: never): never {
+function assertUnreachable(_: never): never {
   throw new Error("Didn't expect to get here");
 }
