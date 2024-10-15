@@ -17,18 +17,18 @@ import {
 
 test("handles the provided sample input", () => {
   const sampleInput = `
-5 3
-1 1 E
-RFRFRFRF
+5 5
 
-3 2 N
-FRRFLLFFRRFLL
+1 2 N
 
-0 3 W
-LLFFFLFLFL
+LMLMLMLMM
+
+3 3 E
+
+MMRMMRMRRM
 `;
 
-  expect(main(sampleInput)).toEqual(["1 1 E", "3 3 N LOST", "2 3 S"]);
+  expect(main(sampleInput)).toEqual(["1 3 N", "5 1 E"]);
 });
 
 describe.todo("processRobot");
@@ -66,37 +66,43 @@ describe("applyInstruction", () => {
 
 describe("parseInputs", () => {
   it("parses the starting coordinates", () => {
-    const input = `1 1\n2 2 E\nRFL`;
+    const input = `5 5\n\n1 2 N\n\nLMLMLMLMM`
     const parsed = parseInputs(input);
 
     expect(parsed.grid).toEqual([
       [0, 0],
-      [1, 1],
+      [5, 5],
     ]);
   });
 
   it("parses each robot", () => {
-    const input = `1 1\n2 2 E\nRFL\n\n3 3 N\nRFL`;
+    const input = `5 5\n\n1 2 N\n\nLMLMLMLMM\n\n3 3 E\n\nMMRMMRMRRM`
     const parsed = parseInputs(input);
 
     expect(parsed.robots).toHaveLength(2);
   });
 
   it("parses a robots start position", () => {
-    const input = `1 1\n2 2 E\nRFL`;
+    const input = `5 5\n\n1 2 N\n\nLMLMLMLMM`
     const parsed = parseInputs(input);
 
-    expect(parsed.robots[0].startPosition).toEqual([[2, 2], Orientation.East]);
+    expect(parsed.robots[0].startPosition).toEqual([[1, 2], Orientation.North]);
   });
 
   it("parses a robots instructions", () => {
-    const input = `1 1\n2 2 E\nRFL`;
+    const input = `5 5\n\n1 2 N\n\nLMLMLMLMM`
     const parsed = parseInputs(input);
 
     expect(parsed.robots[0].instructions).toEqual([
-      Instruction.Right,
+      Instruction.Left,
       Instruction.Forward,
       Instruction.Left,
+      Instruction.Forward,
+      Instruction.Left,
+      Instruction.Forward,
+      Instruction.Left,
+      Instruction.Forward,
+      Instruction.Forward,
     ]);
   });
 

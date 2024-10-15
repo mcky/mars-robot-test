@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "lib": ["ES2015"]
   }
 }

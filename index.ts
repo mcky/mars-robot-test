@@ -232,15 +232,13 @@ type Inputs = {
 export function parseInputs(input: string): Inputs {
   const lines = input.trim().split("\n");
   const initialLine = lines[0];
-  const instructionLines = lines.slice(1).join("\n");
+  const instructionLines = lines.slice(1).filter(Boolean);
 
   const [xMin, yMin] = [0, 0];
   const [xMax, yMax] = initialLine.split(" ").map((n) => parseInt(n, 10));
 
-  const robots = instructionLines
-    .split("\n\n")
-    .map((line): RobotInstructions => {
-      const [startingPosition, instructions] = line.split("\n");
+  const robots = chunkEvery(instructionLines, 2).map(
+    ([startingPosition, instructions]): RobotInstructions => {
       const [xStr, yStr, orientationStr] = startingPosition.split(" ");
       const startCoords: Coordinate = [parseInt(xStr, 10), parseInt(yStr, 10)];
 
@@ -248,7 +246,8 @@ export function parseInputs(input: string): Inputs {
         startPosition: [startCoords, parseOrientation(orientationStr)],
         instructions: instructions.split("").map(parseInstruction),
       };
-    });
+    }
+  );
 
   return {
     grid: [
@@ -271,8 +270,7 @@ function parseOrientation(char: string): Orientation {
     case "W":
       return Orientation.West;
     default:
-      // @ts-expect-error
-      assertUnreachable();
+      throw new Error(`Attempted to parse unknown orientation: ${char}`);
   }
 }
 
@@ -291,8 +289,7 @@ function serializeOrientation(orientation: Orientation): string {
     case Orientation.West:
       return "W";
     default:
-      // @ts-expect-error
-      assertUnreachable();
+      assertUnreachable(orientation);
   }
 }
 
@@ -302,13 +299,31 @@ function parseInstruction(char: string): Instruction {
       return Instruction.Right;
     case "L":
       return Instruction.Left;
-    case "F":
+    case "M":
       return Instruction.Forward;
     default:
-      // @ts-expect-error
-      assertUnreachable();
+      throw new Error(`Attempted to parse unknown instruction: ${char}`);
   }
 }
+
+/**
+ * Split an array into chunks of `len` size
+ *
+ * In the case the array can't be split evenly into the
+ * chunk size provided, any leftover elements will form the last
+ * item in the array
+ *
+ * @example
+ *   chunkEvery([1, 2, 3, 4, 5], 2)
+ *   // => [[1, 2], [3, 4], [5]]
+ */
+const chunkEvery = <T>(arr: T[], size: number): T[][] => {
+  const chunked: T[][] = [];
+  for (let i = 0, j = arr.length; i < j; i += size) {
+    chunked.push(arr.slice(i, i + size));
+  }
+  return chunked;
+};
 
 /**
  * This function is to be used as the default case in a switch statement
@@ -322,8 +337,7 @@ function parseInstruction(char: string): Instruction {
  *       case MyEnum.A:
  *         doSomething()
  *       default:
- *        // \@ts-expect-error
- *        assertUnreachable();
+ *        assertUnreachable(myEnum);
  *    }
  */
 function assertUnreachable(_: never): never {
