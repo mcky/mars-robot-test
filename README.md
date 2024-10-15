@@ -1,5 +1,5 @@
 
-# Red Badger mars robot test task
+# Mars Robot test task
 
 ## Running
 This tech test is using React, bundled and tested via vite and vitest
